@@ -7,17 +7,17 @@
 #include <assert.h>
 
 struct line_t //структура строки( содержит саму строку и ее длину).
-    {
+{
     char *line;
     int length;
-    };
+};
 
 const int TRUE = 1;
 const int FALSE = 0;
 
 //-----------------------------------------------------------------------------
 
-void sortlines(FILE *onegin, FILE *res, char *mode); //основная функция в main, в ней происходят все преобразования
+void LineProcessing(FILE *onegin, FILE *res, char *mode); //основная функция в main, в ней происходят все преобразования
 
 void Sorting(line_t *lines, int n, char *mode); //сортировка строк
 
@@ -25,11 +25,13 @@ void quicksort(line_t *lines, int l_0, int r_0, char *mode); //сортиров�
 
 void insertion(line_t *lines, int n, char *mode);
 
+void switcher(line_t *lines, int l, int r);//меняет строки местами
+
 int strcomp_decrease(line_t *lines, int a, int b);//по убыванию
 
 int strcomp_increase(line_t *lines, int a, int b);//по возрастанию
 
-void switcher(line_t *lines, int l, int r);//меняет строки местами
+
 
 
 //-----------------------------------------------------------------------------
@@ -47,8 +49,8 @@ int main()//int argc, char *argv[] для запуска через консол
     assert(res != NULL);
     assert(onegin != NULL);
 
-    sortlines(onegin, res, "decrease");
-    //sortlines(onegin, res, argv[3]);    //для того, чтобы через консоль выбрать как сортировать
+    LineProcessing(onegin, res, "decrease");
+    //LineProcessing(onegin, res, argv[3]);    //для того, чтобы через консоль выбрать как сортировать
 
     fclose(onegin);
     fclose(res);
@@ -60,7 +62,7 @@ int main()//int argc, char *argv[] для запуска через консол
     return 0;
 }
 
-void sortlines (FILE *onegin, FILE *res, char *mode)
+void LineProcessing (FILE *onegin, FILE *res, char *mode)
 {
     assert(onegin != NULL);
     assert(res != NULL);
