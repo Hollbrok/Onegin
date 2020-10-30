@@ -15,7 +15,7 @@ const int LIM_SIZE = 500;
 const int TRUE = 1;
 const int FALSE = 0;
 
-struct line_t //структура строки( содержит саму строку и ее длину).
+struct line_t //СЃС‚СЂСѓРєС‚СѓСЂР° СЃС‚СЂРѕРєРё( СЃРѕРґРµСЂР¶РёС‚ СЃР°РјСѓ СЃС‚СЂРѕРєСѓ Рё РµРµ РґР»РёРЅСѓ).
     {
     char *line;
     int length;
@@ -23,19 +23,23 @@ struct line_t //структура строки( содержит саму строку и ее длину).
 
 //-----------------------------------------------------------------------------
 
-void LineProcessing(FILE *onegin, FILE *res, char *mode); //основная функция в main, в ней происходят все преобразования
+void LineProcessing(FILE *onegin, FILE *res, char *mode); //РѕСЃРЅРѕРІРЅР°СЏ С„СѓРЅРєС†РёСЏ РІ main, РІ РЅРµР№ РїСЂРѕРёСЃС…РѕРґСЏС‚ РІСЃРµ РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёСЏ
 
-void Sorting(line_t *lines, int n, char *mode); //сортировка строк
+void Sorting(line_t *lines, int n, char *mode); //СЃРѕСЂС‚РёСЂРѕРІРєР° СЃС‚СЂРѕРє
 
-void quicksort(line_t *lines, int l_0, int r_0, char *mode); //сортировка
+void quicksort(line_t *lines, int l_0, int r_0, char *mode); //СЃРѕСЂС‚РёСЂРѕРІРєР°
 
 void insertion(line_t *lines, int n, char *mode);
 
-void switcher(line_t *lines, int l, int r);//меняет строки местами
+void switcher(line_t *lines, int l, int r);//РјРµРЅСЏРµС‚ СЃС‚СЂРѕРєРё РјРµСЃС‚Р°РјРё
 
-int strcomp_decrease(line_t *lines, int a, int b);//по убыванию
+int strcomp_decrease(line_t *lines, int a, int b);//РїРѕ СѓР±С‹РІР°РЅРёСЋ
 
-int strcomp_increase(line_t *lines, int a, int b);//по возрастанию
+int strcomp_decrease_end(line_t *lines, int a, int b);//РїРѕ СѓР±С‹РІР°РЅРёСЋ c РєРѕРЅС†Р° СЃС‚СЂРѕРєРё
+
+int strcomp_increase(line_t *lines, int a, int b);//РїРѕ РІРѕР·СЂР°СЃС‚Р°РЅРёСЋ
+
+int strcomp_increase_end(line_t *lines, int a, int b);//РїРѕ РІРѕР·СЂР°СЃС‚Р°РЅРёСЋ СЃ РєРѕРЅС†Р° СЃС‚СЂРѕРєРё
 
 //-----------------------------------------------------------------------------
 
@@ -48,38 +52,38 @@ void LineProcessing (FILE *onegin, FILE *res, char *mode)
     fseek(onegin, 0, SEEK_END);
     long file_length = ftell(onegin);
 
-    char *stream = (char *) calloc(file_length, sizeof(char));              // массив хранения символов файла
+    char *stream = (char *) calloc(file_length, sizeof(char));              // РјР°СЃСЃРёРІ С…СЂР°РЅРµРЅРёСЏ СЃРёРјРІРѕР»РѕРІ С„Р°Р№Р»Р°
     assert(stream);
 
     fseek(onegin, 0, SEEK_SET);
 
-    int file_lines = 0;                                                     //кол-во строк в файле
-    file_length = 0;                                                        //размер файла
+    int file_lines = 0;                                                     //РєРѕР»-РІРѕ СЃС‚СЂРѕРє РІ С„Р°Р№Р»Рµ
+    file_length = 0;                                                        //СЂР°Р·РјРµСЂ С„Р°Р№Р»Р°
 
     while((stream[file_length] = fgetc(onegin)) != EOF)
     {
-        if(stream[file_length] == '\n')                                     // если "\n", то + 1 к кол-ву строк
+        if(stream[file_length] == '\n')                                     // РµСЃР»Рё "\n", С‚Рѕ + 1 Рє РєРѕР»-РІСѓ СЃС‚СЂРѕРє
             file_lines++;
 
-        file_length++;                                                      //шаг итерации(+ 1 к номеру проверяемого символа)
+        file_length++;                                                      //С€Р°Рі РёС‚РµСЂР°С†РёРё(+ 1 Рє РЅРѕРјРµСЂСѓ РїСЂРѕРІРµСЂСЏРµРјРѕРіРѕ СЃРёРјРІРѕР»Р°)
     }
 
     //printf("%d", file_length);
 
-    free(stream + file_length);                                                 //освобождаем остатки памяти
+    free(stream + file_length);                                                 //РѕСЃРІРѕР±РѕР¶РґР°РµРј РѕСЃС‚Р°С‚РєРё РїР°РјСЏС‚Рё
 
-    struct line_t *lines = (line_t*)calloc(file_lines, sizeof(line_t));         // инициализируем структуры по кол-ву строк, рассчитанных выше
+    struct line_t *lines = (line_t*)calloc(file_lines, sizeof(line_t));         // РёРЅРёС†РёР°Р»РёР·РёСЂСѓРµРј СЃС‚СЂСѓРєС‚СѓСЂС‹ РїРѕ РєРѕР»-РІСѓ СЃС‚СЂРѕРє, СЂР°СЃСЃС‡РёС‚Р°РЅРЅС‹С… РІС‹С€Рµ
     assert(lines);
 
-    int k = 0;                                                                  // счётчик символов(пробелы, табуляции, \n)
-    int i = 0;                                                                  // счётчик структур
-    while(TRUE)                                                                 // читаем строки из массива stream в структуры
+    int k = 0;                                                                  // СЃС‡С‘С‚С‡РёРє СЃРёРјРІРѕР»РѕРІ(РїСЂРѕР±РµР»С‹, С‚Р°Р±СѓР»СЏС†РёРё, \n)
+    int i = 0;                                                                  // СЃС‡С‘С‚С‡РёРє СЃС‚СЂСѓРєС‚СѓСЂ
+    while(TRUE)                                                                 // С‡РёС‚Р°РµРј СЃС‚СЂРѕРєРё РёР· РјР°СЃСЃРёРІР° stream РІ СЃС‚СЂСѓРєС‚СѓСЂС‹
     {
         while(TRUE)
         {
             if(k >= file_length)
                 break;
-            if((stream[k] == ' ') || (stream[k] == '\t') || (stream[k] == '\n'))//если один из первых символов(пробел, табуляция, \n), то +1 к счетчику этих символов
+            if((stream[k] == ' ') || (stream[k] == '\t') || (stream[k] == '\n'))//РµСЃР»Рё РѕРґРёРЅ РёР· РїРµСЂРІС‹С… СЃРёРјРІРѕР»РѕРІ(РїСЂРѕР±РµР», С‚Р°Р±СѓР»СЏС†РёСЏ, \n), С‚Рѕ +1 Рє СЃС‡РµС‚С‡РёРєСѓ СЌС‚РёС… СЃРёРјРІРѕР»РѕРІ
                 k++;
             else
                 break;
@@ -90,7 +94,7 @@ void LineProcessing (FILE *onegin, FILE *res, char *mode)
 
         lines[i].line = &stream[k];
         lines[i].length = k;
-        while(stream[k] != '\n')//пока не конец строки
+        while(stream[k] != '\n')//РїРѕРєР° РЅРµ РєРѕРЅРµС† СЃС‚СЂРѕРєРё
         {
             if(k >= file_length)
                 break;
@@ -98,18 +102,18 @@ void LineProcessing (FILE *onegin, FILE *res, char *mode)
         }
         k++;
 
-        lines[i].length = k - lines[i].length; //отнять кол-во символов вначале(пробел \t \n).
+        lines[i].length = k - lines[i].length; //РѕС‚РЅСЏС‚СЊ РєРѕР»-РІРѕ СЃРёРјРІРѕР»РѕРІ РІРЅР°С‡Р°Р»Рµ(РїСЂРѕР±РµР» \t \n).
         i++;
     }
 
-    Sorting(lines, i, mode);//сортировка строк
+    Sorting(lines, i, mode);//СЃРѕСЂС‚РёСЂРѕРІРєР° СЃС‚СЂРѕРє
 
 
     for(int t = 0; t < i; ++t)
         for(int j = 0; j < lines[t].length; j++)
-            fprintf (res, "%c", lines[t].line[j]);//печать каждого символа отсортировынных строк в файл(res)
+            fprintf (res, "%c", lines[t].line[j]);//РїРµС‡Р°С‚СЊ РєР°Р¶РґРѕРіРѕ СЃРёРјРІРѕР»Р° РѕС‚СЃРѕСЂС‚РёСЂРѕРІС‹РЅРЅС‹С… СЃС‚СЂРѕРє РІ С„Р°Р№Р»(res)
 
-    free(stream);//освобождение выделенной памяти
+    free(stream);//РѕСЃРІРѕР±РѕР¶РґРµРЅРёРµ РІС‹РґРµР»РµРЅРЅРѕР№ РїР°РјСЏС‚Рё
 
 }
 
@@ -134,9 +138,11 @@ void quicksort(line_t *lines, int l_0, int r_0, char *mode)
 
     int (*str_comp)(line_t*, int, int);
 
-    /*if (!strcmp(mode, "rhyme"))
-        str_comp = strcomp_rhyme;
-    else */if(!strcmp(mode, "decrease"))
+    if (!strcmp(mode, "decrease_end"))
+        str_comp = strcomp_decrease_end;
+    else if (!strcmp(mode, "increase_end"))
+        str_comp = strcomp_increase_end;
+    else if(!strcmp(mode, "decrease"))
         str_comp = strcomp_decrease;
     else if(!strcmp(mode, "increase"))
         str_comp = strcomp_increase;
@@ -152,7 +158,7 @@ void quicksort(line_t *lines, int l_0, int r_0, char *mode)
         if(l <= r)
             switcher(lines, l++, r--);
 
-    }while(l <= r);// пока l и r не совпали
+    }while(l <= r);// РїРѕРєР° l Рё r РЅРµ СЃРѕРІРїР°Р»Рё
 
     if(l_0 < r)
         quicksort(lines, l_0, r, mode);
@@ -168,9 +174,12 @@ void insertion(line_t *lines, int n, char *mode)
     assert(mode);
 
     int (*str_comp)(line_t*, int, int);
-    /*if (!strcmp(mode, "rhymes"))
-        str_comp = strcomp_rhymes;
-    else*/ if(!strcmp(mode, "decrease"))
+
+    if (!strcmp(mode, "decrease_end"))
+        str_comp = strcomp_decrease_end;
+    else if (!strcmp(mode, "increase_end"))
+        str_comp = strcomp_increase_end;
+    else if(!strcmp(mode, "decrease"))
         str_comp = strcomp_decrease;
     else if(!strcmp(mode, "increase"))
         str_comp = strcomp_increase;
@@ -179,7 +188,7 @@ void insertion(line_t *lines, int n, char *mode)
     for(int i = 0; i < n - 1; i++)
         for(int j = i + 1; j < n; j++)
 			if(str_comp(lines, i, j) > 0)
-                switcher(lines, i, j);//если нужное условие str_comp
+                switcher(lines, i, j);//РµСЃР»Рё РЅСѓР¶РЅРѕРµ СѓСЃР»РѕРІРёРµ str_comp
 }
 
 //-----------------------------------------------------------------------------
@@ -191,27 +200,27 @@ int strcomp_decrease(line_t *lines, int a, int b)
     int i = 0;
     int j = 0;
 
-    while(!isalpha(lines[a].line[i]) || lines[a].line[i] == '\'' )//  Макрос isalpha() возвращает ненулевое значение, если его аргумент является буквой алфавита (верхнего или нижнего регистра). В противном случае возвращается 0.
-        i++;                                                      //  все цифры и апострофы пропускаем
-    while(!isalpha(lines[b].line[j]) || lines[a].line[i] == '\'' )//  аналогично
+    while(!isalpha(lines[a].line[i]) || lines[a].line[i] == '\'' )//  РњР°РєСЂРѕСЃ isalpha() РІРѕР·РІСЂР°С‰Р°РµС‚ РЅРµРЅСѓР»РµРІРѕРµ Р·РЅР°С‡РµРЅРёРµ, РµСЃР»Рё РµРіРѕ Р°СЂРіСѓРјРµРЅС‚ СЏРІР»СЏРµС‚СЃСЏ Р±СѓРєРІРѕР№ Р°Р»С„Р°РІРёС‚Р° (РІРµСЂС…РЅРµРіРѕ РёР»Рё РЅРёР¶РЅРµРіРѕ СЂРµРіРёСЃС‚СЂР°). Р’ РїСЂРѕС‚РёРІРЅРѕРј СЃР»СѓС‡Р°Рµ РІРѕР·РІСЂР°С‰Р°РµС‚СЃСЏ 0.
+        i++;                                                      //  РІСЃРµ С†РёС„СЂС‹ Рё Р°РїРѕСЃС‚СЂРѕС„С‹ РїСЂРѕРїСѓСЃРєР°РµРј
+    while(!isalpha(lines[b].line[j]) || lines[a].line[i] == '\'' )//  Р°РЅР°Р»РѕРіРёС‡РЅРѕ
         j++;
 
-    while(i < lines[a].length && j < lines[b].length)            //  Пока индексы номера символа меньше длины строки
+    while(i < lines[a].length && j < lines[b].length)            //  РџРѕРєР° РёРЅРґРµРєСЃС‹ РЅРѕРјРµСЂР° СЃРёРјРІРѕР»Р° РјРµРЅСЊС€Рµ РґР»РёРЅС‹ СЃС‚СЂРѕРєРё
     {
-        if(lines[a].line[i] == lines[b].line[j])                 // Пока символы равны увеличиваем индесы на 1
+        if(lines[a].line[i] == lines[b].line[j])                 // РџРѕРєР° СЃРёРјРІРѕР»С‹ СЂР°РІРЅС‹ СѓРІРµР»РёС‡РёРІР°РµРј РёРЅРґРµСЃС‹ РЅР° 1
         {
             i++;
             j++;
         }
-        else                                                      // Как только они не равны
-            return -(lines[a].line[i] - lines[b].line[j]);        // делаем возращение для компаратора.
+        else                                                      // РљР°Рє С‚РѕР»СЊРєРѕ РѕРЅРё РЅРµ СЂР°РІРЅС‹
+            return -(lines[a].line[i] - lines[b].line[j]);        // РґРµР»Р°РµРј РІРѕР·СЂР°С‰РµРЅРёРµ РґР»СЏ РєРѕРјРїР°СЂР°С‚РѕСЂР°.
     }
-    return -(lines[a].line[i] - lines[b].line[j]);                // Если достигнут конец строки, то делаем аналогично.
+    return -(lines[a].line[i] - lines[b].line[j]);                // Р•СЃР»Рё РґРѕСЃС‚РёРіРЅСѓС‚ РєРѕРЅРµС† СЃС‚СЂРѕРєРё, С‚Рѕ РґРµР»Р°РµРј Р°РЅР°Р»РѕРіРёС‡РЅРѕ.
 }
 
 //-----------------------------------------------------------------------------
 
-int strcomp_increase(line_t *lines, int a, int b)                   //все аналогично Strcomp_decrease, но return противоположный.
+int strcomp_increase(line_t *lines, int a, int b)                   //РІСЃРµ Р°РЅР°Р»РѕРіРёС‡РЅРѕ Strcomp_decrease, РЅРѕ return РїСЂРѕС‚РёРІРѕРїРѕР»РѕР¶РЅС‹Р№.
 {
     assert(lines);
 
@@ -238,22 +247,74 @@ int strcomp_increase(line_t *lines, int a, int b)                   //все аналог
 
 //-----------------------------------------------------------------------------
 
-void switcher(line_t *lines, int l, int r)//меняем строки местами
+void switcher(line_t *lines, int l, int r)//РјРµРЅСЏРµРј СЃС‚СЂРѕРєРё РјРµСЃС‚Р°РјРё
 {
     assert(lines);
 
-    char *strtmp = lines[l].line;  //временная строка
-    lines[l].line = lines[r].line; //меняем строки
-    lines[r].line = strtmp;        //местами
+    char *strtmp = lines[l].line;  //РІСЂРµРјРµРЅРЅР°СЏ СЃС‚СЂРѕРєР°
+    lines[l].line = lines[r].line; //РјРµРЅСЏРµРј СЃС‚СЂРѕРєРё
+    lines[r].line = strtmp;        //РјРµСЃС‚Р°РјРё
 
-    int tmp = lines[l].length;        //временная переменная длины
-    lines[l].length = lines[r].length;//меняем длины
-    lines[r].length = tmp;            //местами
+    int tmp = lines[l].length;        //РІСЂРµРјРµРЅРЅР°СЏ РїРµСЂРµРјРµРЅРЅР°СЏ РґР»РёРЅС‹
+    lines[l].length = lines[r].length;//РјРµРЅСЏРµРј РґР»РёРЅС‹
+    lines[r].length = tmp;            //РјРµСЃС‚Р°РјРё
 }
 
 //-----------------------------------------------------------------------------
 
+int strcomp_increase_end(line_t *lines, int a, int b)
+{
+    assert(lines);
 
+    int i = lines[a].length;
+    int j = lines[b].length;
+
+    while(!isalpha(lines[a].line[i]) || lines[a].line[i] == '\'' )
+        i--;
+    while(!isalpha(lines[b].line[j]) || lines[a].line[i] == '\'' )
+        j--;
+
+    while(i > 0 && j > 0)
+    {
+        if(lines[a].line[i] == lines[b].line[j])
+        {
+            i--;
+            j--;
+        }
+        else
+            return (lines[a].line[i] - lines[b].line[j]);
+    }
+    return (lines[a].line[i] - lines[b].line[j]);
+
+}
+
+//-----------------------------------------------------------------------------
+
+int strcomp_decrease_end(line_t *lines, int a, int b)
+{
+    assert(lines);
+
+    int i = lines[a].length;
+    int j = lines[b].length;
+
+    while(!isalpha(lines[a].line[i]) || lines[a].line[i] == '\'' )
+        i--;                                                      
+    while(!isalpha(lines[b].line[j]) || lines[a].line[i] == '\'' )
+        j--;
+
+    while(i > 0 && j > 0)            
+    {
+        if(lines[a].line[i] == lines[b].line[j])                
+        {
+            i--;
+            j--;
+        }
+        else                                                    
+            return -(lines[a].line[i] - lines[b].line[j]);      
+    }
+    return -(lines[a].line[i] - lines[b].line[j]);              
+}
+//-----------------------------------------------------------------------------
 
 
 #endif // SORTLINE_H_INCLUDED
