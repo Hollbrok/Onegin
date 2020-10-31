@@ -12,8 +12,8 @@ int main()//int main(int argc, char *argv[]) для запуска через к
     assert(res != NULL);
     assert(onegin != NULL);
 
-    LineProcessing(onegin, res, "decrease");
-    //LineProcessing(onegin, res, argv[3]);    //для того, чтобы через консоль выбрать как сортировать
+    LineProcessing(onegin, res, "decrease_end", "yes"); //yes - делать результат бредогенерации
+    //LineProcessing(onegin, res, argv[3], argv[4]);    //для того, чтобы через консоль выбрать как сортировать
 
     fclose(onegin);
     fclose(res);
