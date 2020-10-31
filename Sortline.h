@@ -8,46 +8,51 @@
 #include <ctype.h>
 #include <string.h>
 #include <assert.h>
-
+#include <time.h>
 
 const int LIM_SIZE = 500;
-
+const int BRED_SIZE = 200; //кол-во четверостиший.
 const int TRUE = 1;
 const int FALSE = 0;
 
 struct line_t //структура строки( содержит саму строку и ее длину).
-    {
+{
     char *line;
     int length;
-    };
+};
 
 //-----------------------------------------------------------------------------
 
-void LineProcessing(FILE *onegin, FILE *res, char *mode); //основная функция в main, в ней происходят все преобразования
+void LineProcessing(FILE *onegin, FILE *res, char *mode, char* isbred); //основная функция в main, в ней происходят все преобразования.
 
-void Sorting(line_t *lines, int n, char *mode); //сортировка строк
+void Sorting(line_t *lines, int n, char *mode); //сортировка строк.
 
-void quicksort(line_t *lines, int l_0, int r_0, char *mode); //сортировка
+void Quicksort(line_t *lines, int l_0, int r_0, char *mode); //сортировка.
 
-void insertion(line_t *lines, int n, char *mode);
+void Insertion(line_t *lines, int n, char *mode);
 
-void switcher(line_t *lines, int l, int r);//меняет строки местами
+void Switcher(line_t *lines, int l, int r);//меняет строки местами.
 
-int strcomp_decrease(line_t *lines, int a, int b);//по убыванию
+void Bred_Gen(line_t *lines, char *bred_ind, int n);//бредогенератор.
 
-int strcomp_decrease_end(line_t *lines, int a, int b);//по убыванию c конца строки
+int strcomp_decrease(line_t *lines, int a, int b);//по убыванию.
 
-int strcomp_increase(line_t *lines, int a, int b);//по возрастанию
+int strcomp_decrease_end(line_t *lines, int a, int b);//по убыванию c конца строки.
 
-int strcomp_increase_end(line_t *lines, int a, int b);//по возрастанию с конца строки
+int strcomp_increase(line_t *lines, int a, int b);//по возрастанию.
+
+int strcomp_increase_end(line_t *lines, int a, int b);//по возрастанию с конца строки.
+
+
 
 //-----------------------------------------------------------------------------
 
-void LineProcessing (FILE *onegin, FILE *res, char *mode)
+void LineProcessing(FILE *onegin, FILE *res, char *mode, char *isbred)
 {
     assert(onegin != NULL);
-    assert(res != NULL);
-    assert(mode != NULL);
+    assert(res    != NULL);
+    assert(mode   != NULL);
+    assert(isbred != NULL);
 
     fseek(onegin, 0, SEEK_END);
     long file_length = ftell(onegin);
@@ -67,8 +72,6 @@ void LineProcessing (FILE *onegin, FILE *res, char *mode)
 
         file_length++;                                                      //шаг итерации(+ 1 к номеру проверяемого символа)
     }
-
-    //printf("%d", file_length);
 
     free(stream + file_length);                                                 //освобождаем остатки памяти
 
@@ -102,18 +105,19 @@ void LineProcessing (FILE *onegin, FILE *res, char *mode)
         }
         k++;
 
-        lines[i].length = k - lines[i].length; //отнять кол-во символов вначале(пробел \t \n).
+        lines[i].length = k - lines[i].length;      //отнять кол-во символов вначале(пробел \t \n).
         i++;
     }
 
-    Sorting(lines, i, mode);//сортировка строк
+    Sorting(lines, i, mode);                        //сортировка строк
 
+    Bred_Gen(lines, isbred, i);                     //бредогенератор
 
-    for(int t = 0; t < i; ++t)
+    for(int t = 0; t < i; ++t)                      //печать в файл
         for(int j = 0; j < lines[t].length; j++)
-            fprintf (res, "%c", lines[t].line[j]);//печать каждого символа отсортировынных строк в файл(res)
+            fprintf(res, "%c", lines[t].line[j]);   //печать каждого символа отсортировынных строк в файл(res)
 
-    free(stream);//освобождение выделенной памяти
+    free(stream);                                   //освобождение выделенной памяти
 
 }
 
@@ -121,13 +125,13 @@ void LineProcessing (FILE *onegin, FILE *res, char *mode)
 
 void Sorting(line_t *lines, int n, char *mode)
 {
-    quicksort(lines, 0, n - 1, mode);
-    insertion(lines, n, mode);
+    Quicksort(lines, 0, n - 1, mode);
+    Insertion(lines, n, mode);
 }
 
 //-----------------------------------------------------------------------------
 
-void quicksort(line_t *lines, int l_0, int r_0, char *mode)
+void Quicksort(line_t *lines, int l_0, int r_0, char *mode)
 {
     assert(lines);
     assert(mode);
@@ -138,9 +142,9 @@ void quicksort(line_t *lines, int l_0, int r_0, char *mode)
 
     int (*str_comp)(line_t*, int, int);
 
-    if (!strcmp(mode, "decrease_end"))
+    if(!strcmp(mode, "decrease_end"))
         str_comp = strcomp_decrease_end;
-    else if (!strcmp(mode, "increase_end"))
+    else if(!strcmp(mode, "increase_end"))
         str_comp = strcomp_increase_end;
     else if(!strcmp(mode, "decrease"))
         str_comp = strcomp_decrease;
@@ -156,28 +160,28 @@ void quicksort(line_t *lines, int l_0, int r_0, char *mode)
             r--;
 
         if(l <= r)
-            switcher(lines, l++, r--);
+            Switcher(lines, l++, r--);
 
     }while(l <= r);// пока l и r не совпали
 
     if(l_0 < r)
-        quicksort(lines, l_0, r, mode);
+        Quicksort(lines, l_0, r, mode);
     if(r_0 > l)
-        quicksort(lines, l, r_0, mode);
+        Quicksort(lines, l, r_0, mode);
 }
 
 //-----------------------------------------------------------------------------
 
-void insertion(line_t *lines, int n, char *mode)
+void Insertion(line_t *lines, int n, char *mode)
 {
     assert(lines);
     assert(mode);
 
     int (*str_comp)(line_t*, int, int);
 
-    if (!strcmp(mode, "decrease_end"))
+    if(!strcmp(mode, "decrease_end"))
         str_comp = strcomp_decrease_end;
-    else if (!strcmp(mode, "increase_end"))
+    else if(!strcmp(mode, "increase_end"))
         str_comp = strcomp_increase_end;
     else if(!strcmp(mode, "decrease"))
         str_comp = strcomp_decrease;
@@ -188,7 +192,7 @@ void insertion(line_t *lines, int n, char *mode)
     for(int i = 0; i < n - 1; i++)
         for(int j = i + 1; j < n; j++)
 			if(str_comp(lines, i, j) > 0)
-                switcher(lines, i, j);//если нужное условие str_comp
+                Switcher(lines, i, j);                              //если нужное условие str_comp
 }
 
 //-----------------------------------------------------------------------------
@@ -247,7 +251,7 @@ int strcomp_increase(line_t *lines, int a, int b)                   //все а�
 
 //-----------------------------------------------------------------------------
 
-void switcher(line_t *lines, int l, int r)//меняем строки местами
+void Switcher(line_t *lines, int l, int r)                          //меняем строки местами.
 {
     assert(lines);
 
@@ -297,24 +301,88 @@ int strcomp_decrease_end(line_t *lines, int a, int b)
     int i = lines[a].length;
     int j = lines[b].length;
 
-    while(!isalpha(lines[a].line[i]) || lines[a].line[i] == '\'' )
-        i--;                                                      
-    while(!isalpha(lines[b].line[j]) || lines[a].line[i] == '\'' )
+    while(!isalpha(lines[a].line[i]) || lines[a].line[i] == '\'' )  //  Макрос isalpha() возвращает ненулевое значение, если его аргумент является буквой алфавита (верхнего или нижнего регистра). В противном случае возвращается 0.
+        i--;                                                        //  все цифры и апострофы пропускаем
+    while(!isalpha(lines[b].line[j]) || lines[a].line[i] == '\'' )  //  аналогично
         j--;
 
-    while(i > 0 && j > 0)            
+    while(i > 0 && j > 0)                                           //  Пока индексы номера символа меньше длины строки
     {
-        if(lines[a].line[i] == lines[b].line[j])                
+        if(lines[a].line[i] == lines[b].line[j])                    // Пока символы равны увеличиваем индесы на 1
         {
             i--;
             j--;
         }
-        else                                                    
-            return -(lines[a].line[i] - lines[b].line[j]);      
+        else                                                        // Как только они не равны
+            return -(lines[a].line[i] - lines[b].line[j]);          // делаем возращение для компаратора.
     }
-    return -(lines[a].line[i] - lines[b].line[j]);              
+    return -(lines[a].line[i] - lines[b].line[j]);                  // Если достигнут конец строки, то делаем аналогично.
 }
 //-----------------------------------------------------------------------------
 
+void Bred_Gen(line_t *lines, char *isbred, int n)   //бредогенератор.
+{
+    assert(lines);
+    assert(isbred);
+
+    FILE *res = fopen("res_bred.txt", "w");         //куда выводить результат бредогенерации.
+
+    if(!strcmp(isbred, "yes"))                      //проверка нужна ли бредогенерация.
+    {
+        int rand1 = 0;
+        int rand2 = 0;
+
+        srand(time(NULL));                          //рандом от времени.
+
+        for(size_t j = 0; j < BRED_SIZE; j++)
+        {
+            if(rand() % 2 == 1)                     //rand() % 2 -- рандомное число : 0 или 1. Если один, то мы печатаем четверостишие с рифмами через одну.
+            {
+                rand1 = rand() % (n - 1);           //берем рандомную строчку и печатаем ее в файл.
+                for(size_t i = 0; i < lines[rand1].length; i++)
+                    fprintf(res, "%c", lines[rand1].line[i]);
+
+                rand2 = rand() % (n - 1);           //берем другую рандомную строчку и печатаем ее в файл.
+                for(size_t i = 0; i < lines[rand2].length; i++)
+                    fprintf(res, "%c", lines[rand2].line[i]);
+
+                rand1++;
+                rand2++;
+
+                for(size_t i = 0; i < lines[rand1].length; i++) //теперь заполняем в четверостишие 3 и 4 строчку.
+                    fprintf(res, "%c", lines[rand1].line[i]);
+                for(size_t i = 0; i < lines[rand2].length; i++)
+                    fprintf(res, "%c", lines[rand2].line[i]);
+
+                fprintf (res, "\n");
+            }
+
+            else                                                //если выпало число 0, то в четверостишие будут рифмы подряд.
+            {
+                rand1 = rand() % (n - 1);
+                for(size_t i = 0; i < lines[rand1].length; i++)
+                    fprintf(res, "%c", lines[rand1].line[i]);
+
+                rand1++;
+
+                for(size_t i = 0; i < lines[rand1].length; i++)
+                    fprintf(res, "%c", lines[rand1].line[i]);
+
+                rand2 = rand() % (n - 1);
+                for(size_t i = 0; i < lines[rand2].length; i++)
+                    fprintf(res, "%c", lines[rand2].line[i]);
+
+                rand2++;
+
+                for(size_t i = 0; i < lines[rand2].length; i++)
+                    fprintf(res, "%c", lines[rand2].line[i]);
+
+                fprintf(res, "\n");
+            }
+        }
+    }
+}
+
+//-----------------------------------------------------------------------------
 
 #endif // SORTLINE_H_INCLUDED
