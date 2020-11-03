@@ -6,6 +6,8 @@ int main()//int main(int argc, char *argv[]) для запуска через к
     //FILE *onegin = fopen(argv[1], "r"); //чтобы через консоль указать какой файл открыть
     //FILE *res = fopen(argv[2], "w");    //чтобы через консоль указать в какой файл записать
 
+    //setlocale(LC_ALL, "Russian");
+
     FILE *onegin = fopen("source.txt", "r");
     FILE *res    = fopen("res.txt",    "w");
 
