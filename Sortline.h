@@ -13,7 +13,6 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <wchar.h>
-//#include <locale.h>
 
 const int LIM_SIZE = 500;
 const int BRED_SIZE = 1000; //кол-во четверостиший.
