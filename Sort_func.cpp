@@ -10,29 +10,29 @@ void LineProcessing(FILE *onegin, FILE *res, char *mode, char *isbred)
     fseek(onegin, 0, SEEK_END);
     long file_length = ftell(onegin);
 
-    wchar_t *stream = (wchar_t *) calloc(file_length, sizeof(wchar_t));              // массив хранения символов файла
+    wchar_t *stream = (wchar_t *) calloc(file_length, sizeof(wchar_t));             	// массив хранения символов файла
     assert(stream);
 
     fseek(onegin, 0, SEEK_SET);
 
-    int file_lines = 0;                                                     //кол-во строк в файле
-    file_length = 0;                                                        //размер файла
+    int file_lines = 0;                                                     		//кол-во строк в файле
+    file_length = 0;                                                        		//размер файла
 
     while((stream[file_length] = fgetwc(onegin)) && !feof(onegin))
     {
-        if(stream[file_length] == '\n')                                     // если "\n", то + 1 к кол-ву строк
+        if(stream[file_length] == '\n')                                     		// если "\n", то + 1 к кол-ву строк
             file_lines++;
 
-        file_length++;                                                      //шаг итерации(+ 1 к номеру проверяемого символа)
+        file_length++;                                                      		//шаг итерации(+ 1 к номеру проверяемого символа)
     }
-    free(stream + file_length);                                                 //освобождаем остатки памяти
+    free(stream + file_length);                                                 	//освобождаем остатки памяти
 
-    struct line_t *lines = (line_t*)calloc(file_lines, sizeof(line_t));         // инициализируем структуры по кол-ву строк, рассчитанных выше
+    struct line_t *lines = (line_t*)calloc(file_lines, sizeof(line_t));         	// инициализируем структуры по кол-ву строк, рассчитанных выше
     assert(lines);
 
-    long k = 0;                                                                  // счётчик символов(пробелы, табуляции, \n)
-    long i = 0;                                                                  // счётчик структур
-    while(TRUE)                                                                 // читаем строки из массива stream в структуры
+    long k = 0;                                                                  	// счётчик символов(пробелы, табуляции, \n)
+    long i = 0;                                                                  	// счётчик структур
+    while(TRUE)                                                                 	// читаем строки из массива stream в структуры
     {
         while(TRUE)
         {
