@@ -10,7 +10,7 @@ void LineProcessing(FILE *onegin, FILE *res, char *mode, char *isbred)
     fseek(onegin, 0, SEEK_END);
     long file_length = ftell(onegin);
 
-    char *stream = (char *) calloc(file_length, sizeof(char));              // массив хранения символов файла
+    wchar_t *stream = (wchar_t *) calloc(file_length, sizeof(wchar_t));              // массив хранения символов файла
     assert(stream);
 
     fseek(onegin, 0, SEEK_SET);
@@ -18,28 +18,27 @@ void LineProcessing(FILE *onegin, FILE *res, char *mode, char *isbred)
     int file_lines = 0;                                                     //кол-во строк в файле
     file_length = 0;                                                        //размер файла
 
-    while((stream[file_length] = fgetc(onegin)) != EOF)
+    while((stream[file_length] = fgetwc(onegin)) && !feof(onegin))
     {
         if(stream[file_length] == '\n')                                     // если "\n", то + 1 к кол-ву строк
             file_lines++;
 
         file_length++;                                                      //шаг итерации(+ 1 к номеру проверяемого символа)
     }
-
     free(stream + file_length);                                                 //освобождаем остатки памяти
 
     struct line_t *lines = (line_t*)calloc(file_lines, sizeof(line_t));         // инициализируем структуры по кол-ву строк, рассчитанных выше
     assert(lines);
 
-    int k = 0;                                                                  // счётчик символов(пробелы, табуляции, \n)
-    int i = 0;                                                                  // счётчик структур
+    long k = 0;                                                                  // счётчик символов(пробелы, табуляции, \n)
+    long i = 0;                                                                  // счётчик структур
     while(TRUE)                                                                 // читаем строки из массива stream в структуры
     {
         while(TRUE)
         {
             if(k >= file_length)
                 break;
-            if((stream[k] == ' ') || (stream[k] == '\t') || (stream[k] == '\n'))//если один из первых символов(пробел, табуляция, \n), то +1 к счетчику этих символов
+            if((stream[k] == ' ') || (stream[k] == '\t') || (stream[k] == '\n') || (stream[k] == '.') || (stream[k] == 'I') || (stream[k] == 'L') || (stream[k] == 'X') || (stream[k] == 'V') || (stream[k] == ','))//если один из первых символов(пробел, табуляция, \n), то +1 к счетчику этих символов
                 k++;
             else
                 break;
@@ -67,11 +66,11 @@ void LineProcessing(FILE *onegin, FILE *res, char *mode, char *isbred)
 
     Bred_Gen(lines, isbred, i);                     //бредогенератор
 
-    for(int t = 0; t < i; ++t)                      //печать в файл
-        for(int j = 0; j < lines[t].length; j++)
+    for(long t = 0; t < i; ++t)                      //печать в файл
+        for(long j = 0; j < lines[t].length; j++)
         {
             //OemToChar(&lines[t].line[j], &lines[t].line[j]);
-            fprintf(res, "%c", lines[t].line[j]);   //печать каждого символа отсортировынных строк в файл(res)
+            fprintf(res, "%lc", lines[t].line[j]);   //печать каждого символа отсортировынных строк в файл(res)
         }
 
     free(stream);                                   //освобождение выделенной памяти
@@ -80,7 +79,7 @@ void LineProcessing(FILE *onegin, FILE *res, char *mode, char *isbred)
 
 //-----------------------------------------------------------------------------
 
-void Sorting(line_t *lines, int n, char *mode)
+void Sorting(line_t *lines, long n, char *mode)
 {
     Quicksort(lines, 0, n - 1, mode);
     Insertion(lines, n, mode);
@@ -88,16 +87,16 @@ void Sorting(line_t *lines, int n, char *mode)
 
 //-----------------------------------------------------------------------------
 
-void Quicksort(line_t *lines, int l_0, int r_0, char *mode)
+void Quicksort(line_t *lines, long l_0, long r_0, char *mode)
 {
     assert(lines);
     assert(mode);
 
-    int piv = (l_0 + r_0)/2;
-    int l = l_0;
-    int r = r_0;
+    long piv = (l_0 + r_0)/2;
+    long l = l_0;
+    long r = r_0;
 
-    int (*str_comp)(line_t*, int, int);
+    int (*str_comp)(line_t*, long, long);
 
     if(!strcmp(mode, "decrease_end"))
         str_comp = strcomp_decrease_end;
@@ -129,12 +128,12 @@ void Quicksort(line_t *lines, int l_0, int r_0, char *mode)
 
 //-----------------------------------------------------------------------------
 
-void Insertion(line_t *lines, int n, char *mode)
+void Insertion(line_t *lines, long n, char *mode)
 {
     assert(lines);
     assert(mode);
 
-    int (*str_comp)(line_t*, int, int);
+    int (*str_comp)(line_t*, long, long);
 
     if(!strcmp(mode, "decrease_end"))
         str_comp = strcomp_decrease_end;
@@ -146,24 +145,24 @@ void Insertion(line_t *lines, int n, char *mode)
         str_comp = strcomp_increase;
     else exit(1);
 
-    for(int i = 0; i < n - 1; i++)
-        for(int j = i + 1; j < n; j++)
+    for(long i = 0; i < n - 1; i++)
+        for(long j = i + 1; j < n; j++)
 			if(str_comp(lines, i, j) > 0)
                 Switcher(lines, i, j);                              //если нужное условие str_comp
 }
 
 //-----------------------------------------------------------------------------
 
-int strcomp_decrease(line_t *lines, int a, int b)
+int strcomp_decrease(line_t *lines, long a, long b)
 {
     assert(lines);
 
-    int i = 0;
-    int j = 0;
+    long i = 0;
+    long j = 0;
 
-    while(!isalpha(lines[a].line[i]) || lines[a].line[i] == '\'' )//  Макрос isalpha() возвращает ненулевое значение, если его аргумент является буквой алфавита (верхнего или нижнего регистра). В противном случае возвращается 0.
+    while(!iswalpha(lines[a].line[i]) || lines[a].line[i] == '\'' )//  Макрос isalpha() возвращает ненулевое значение, если его аргумент является буквой алфавита (верхнего или нижнего регистра). В противном случае возвращается 0.
         i++;                                                      //  все цифры и апострофы пропускаем
-    while(!isalpha(lines[b].line[j]) || lines[a].line[i] == '\'' )//  аналогично
+    while(!iswalpha(lines[b].line[j]) || lines[a].line[i] == '\'' )//  аналогично
         j++;
 
     while(i < lines[a].length && j < lines[b].length)            //  Пока индексы номера символа меньше длины строки
@@ -181,16 +180,16 @@ int strcomp_decrease(line_t *lines, int a, int b)
 
 //-----------------------------------------------------------------------------
 
-int strcomp_increase(line_t *lines, int a, int b)                   //все аналогично Strcomp_decrease, но return противоположный.
+int strcomp_increase(line_t *lines, long a, long b)                   //все аналогично Strcomp_decrease, но return противоположный.
 {
     assert(lines);
 
-    int i = 0;
-    int j = 0;
+    long i = 0;
+    long j = 0;
 
-    while(!isalpha(lines[a].line[i]) || lines[a].line[i] == '\'' )
+    while(!iswalpha(lines[a].line[i]) || lines[a].line[i] == '\'')
         i++;
-    while(!isalpha(lines[b].line[j]) || lines[a].line[i] == '\'' )
+    while(!iswalpha(lines[b].line[j]) || lines[a].line[i] == '\'')
         j++;
 
     while(i < lines[a].length && j < lines[b].length)
@@ -208,31 +207,31 @@ int strcomp_increase(line_t *lines, int a, int b)                   //все а�
 
 //-----------------------------------------------------------------------------
 
-void Switcher(line_t *lines, int l, int r)                          //меняем строки местами.
+void Switcher(line_t *lines, long l, long r)                          //меняем строки местами.
 {
     assert(lines);
 
-    char *strtmp = lines[l].line;  //временная строка
-    lines[l].line = lines[r].line; //меняем строки
-    lines[r].line = strtmp;        //местами
+    wchar_t *strtmp = lines[l].line;                                 //временная строка
+    lines[l].line = lines[r].line;                                   //меняем строки
+    lines[r].line = strtmp;                                          //местами
 
-    int tmp = lines[l].length;        //временная переменная длины
+    long tmp = lines[l].length;        //временная переменная длины
     lines[l].length = lines[r].length;//меняем длины
     lines[r].length = tmp;            //местами
 }
 
 //-----------------------------------------------------------------------------
 
-int strcomp_increase_end(line_t *lines, int a, int b)
+int strcomp_increase_end(line_t *lines, long a, long b)
 {
     assert(lines);
 
-    int i = lines[a].length;
-    int j = lines[b].length;
+    long i = lines[a].length;
+    long j = lines[b].length;
 
-    while(!isalpha(lines[a].line[i]) || lines[a].line[i] == '\'' )
+    while(!iswalpha(lines[a].line[i]) || lines[a].line[i] == '\'' )
         i--;
-    while(!isalpha(lines[b].line[j]) || lines[a].line[i] == '\'' )
+    while(!iswalpha(lines[b].line[j]) || lines[a].line[i] == '\'' )
         j--;
 
     while(i > 0 && j > 0)
@@ -251,16 +250,16 @@ int strcomp_increase_end(line_t *lines, int a, int b)
 
 //-----------------------------------------------------------------------------
 
-int strcomp_decrease_end(line_t *lines, int a, int b)
+int strcomp_decrease_end(line_t *lines, long a, long b)
 {
     assert(lines);
 
-    int i = lines[a].length;
-    int j = lines[b].length;
+    long i = lines[a].length;
+    long j = lines[b].length;
 
-    while(!isalpha(lines[a].line[i]) || lines[a].line[i] == '\'' )  //  Макрос isalpha() возвращает ненулевое значение, если его аргумент является буквой алфавита (верхнего или нижнего регистра). В противном случае возвращается 0.
+    while(!iswalpha(lines[a].line[i]) || lines[a].line[i] == '\'')  //  Макрос isalpha() возвращает ненулевое значение, если его аргумент является буквой алфавита (верхнего или нижнего регистра). В противном случае возвращается 0.
         i--;                                                        //  все цифры и апострофы пропускаем
-    while(!isalpha(lines[b].line[j]) || lines[a].line[i] == '\'' )  //  аналогично
+    while(!iswalpha(lines[b].line[j]) || lines[a].line[i] == '\'')  //  аналогично
         j--;
 
     while(i > 0 && j > 0)                                           //  Пока индексы номера символа меньше длины строки
@@ -277,7 +276,7 @@ int strcomp_decrease_end(line_t *lines, int a, int b)
 }
 //-----------------------------------------------------------------------------
 
-void Bred_Gen(line_t *lines, char *isbred, int n)   //бредогенератор.
+void Bred_Gen(line_t *lines, char *isbred, long n)   //бредогенератор.
 {
     assert(lines);
     assert(isbred);
@@ -300,19 +299,19 @@ void Bred_Gen(line_t *lines, char *isbred, int n)   //бредогенерато
             {
                 rand1 = rand() % (n - 1);           //берем рандомную строчку и печатаем ее в файл.
                 for(size_t i = 0; i < lines[rand1].length; i++)
-                    fprintf(res, "%c", lines[rand1].line[i]);
+                    fprintf(res, "%lc", lines[rand1].line[i]);
 
                 rand2 = rand() % (n - 1);           //берем другую рандомную строчку и печатаем ее в файл.
                 for(size_t i = 0; i < lines[rand2].length; i++)
-                    fprintf(res, "%c", lines[rand2].line[i]);
+                    fprintf(res, "%lc", lines[rand2].line[i]);
 
                 rand1++;
                 rand2++;
 
                 for(size_t i = 0; i < lines[rand1].length; i++) //теперь заполняем в четверостишие 3 и 4 строчку.
-                    fprintf(res, "%c", lines[rand1].line[i]);
+                    fprintf(res, "%lc", lines[rand1].line[i]);
                 for(size_t i = 0; i < lines[rand2].length; i++)
-                    fprintf(res, "%c", lines[rand2].line[i]);
+                    fprintf(res, "%lc", lines[rand2].line[i]);
 
                 fprintf (res, "\n");
             }
@@ -321,21 +320,21 @@ void Bred_Gen(line_t *lines, char *isbred, int n)   //бредогенерато
             {
                 rand1 = rand() % (n - 1);
                 for(size_t i = 0; i < lines[rand1].length; i++)
-                    fprintf(res, "%c", lines[rand1].line[i]);
+                    fprintf(res, "%lc", lines[rand1].line[i]);
 
                 rand1++;
 
                 for(size_t i = 0; i < lines[rand1].length; i++)
-                    fprintf(res, "%c", lines[rand1].line[i]);
+                    fprintf(res, "%lc", lines[rand1].line[i]);
 
                 rand2 = rand() % (n - 1);
                 for(size_t i = 0; i < lines[rand2].length; i++)
-                    fprintf(res, "%c", lines[rand2].line[i]);
+                    fprintf(res, "%lc", lines[rand2].line[i]);
 
                 rand2++;
 
                 for(size_t i = 0; i < lines[rand2].length; i++)
-                    fprintf(res, "%c", lines[rand2].line[i]);
+                    fprintf(res, "%lc", lines[rand2].line[i]);
 
                 fprintf(res, "\n");
             }
