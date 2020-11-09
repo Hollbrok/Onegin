@@ -52,19 +52,6 @@ void LineProcessing(FILE *onegin, FILE *res, char *mode, char* isbred);
 void Sorting(line_t *lines, long n, char *mode);
 
 //-----------------------------------------------------------------------------
-//! @brief Primary sortning
-//! @param [in] lines - pointer to an array of string structures
-//! @param [in] l_0   - number of the first line to start sorting
-//! @param [in] r_0   - number of the last line
-//! @param [in] mode  - mode of how to process the data
-//! @author Hollbrok
-//! @version 0.6.2
-//! @param
-//-----------------------------------------------------------------------------
-
-void Quicksort(line_t *lines, long l_0, long r_0, char *mode); //сортировка.
-
-//-----------------------------------------------------------------------------
 //! @brief Sorting lines
 //! @param [in] lines - pointer to an array of string structures
 //! @param [in] n     - number of the lines
