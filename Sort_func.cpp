@@ -81,53 +81,10 @@ void LineProcessing(FILE *onegin, FILE *res, char *mode, char *isbred)
 
 void Sorting(line_t *lines, long n, char *mode)
 {
-    Quicksort(lines, 0, n - 1, mode);
     Insertion(lines, n, mode);
 }
 
 //-----------------------------------------------------------------------------
-
-void Quicksort(line_t *lines, long l_0, long r_0, char *mode)
-{
-    assert(lines);
-    assert(mode);
-
-    long piv = (l_0 + r_0)/2;
-    long l = l_0;
-    long r = r_0;
-
-    int (*str_comp)(line_t*, long, long);
-
-    if(!strcmp(mode, "decrease_end"))
-        str_comp = strcomp_decrease_end;
-    else if(!strcmp(mode, "increase_end"))
-        str_comp = strcomp_increase_end;
-    else if(!strcmp(mode, "decrease"))
-        str_comp = strcomp_decrease;
-    else if(!strcmp(mode, "increase"))
-        str_comp = strcomp_increase;
-    else exit(1);
-
-    do
-    {
-        while(str_comp(lines, piv, l) > 0)
-            l++;
-        while(str_comp(lines, r, piv) > 0)
-            r--;
-
-        if(l <= r)
-            Switcher(lines, l++, r--);
-
-    }while(l <= r);                             // пока l и r не совпали
-
-    if(l_0 < r)
-        Quicksort(lines, l_0, r, mode);
-    if(r_0 > l)
-        Quicksort(lines, l, r_0, mode);
-}
-
-//-----------------------------------------------------------------------------
-
 void Insertion(line_t *lines, long n, char *mode)
 {
     assert(lines);
